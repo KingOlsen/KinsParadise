@@ -9,12 +9,21 @@ import Sidebar from './components/Sidebar';
 import KitchenView from './components/KitchenView';
 import RevenueView from './components/RevenueView';
 import ExpensesView from './components/ExpensesView';
+import OrderHistoryView from './components/OrderHistoryView';
 
-const INITIAL_TABLES: Table[] = Array.from({ length: 12 }, (_, i) => ({
+const regularTables: Table[] = Array.from({ length: 12 }, (_, i) => ({
   id: i + 1,
   number: `${i + 1}`,
   status: 'Available',
 }));
+
+const codTables: Table[] = Array.from({ length: 6 }, (_, i) => ({
+  id: i + 13,
+  number: `COD ${i + 1}`,
+  status: 'Available',
+}));
+
+const INITIAL_TABLES: Table[] = [...regularTables, ...codTables];
 
 const INITIAL_MENU: MenuItem[] = [
   { id: '1', name: 'Classic Burger', price: 12.99, category: 'Food', description: 'Juicy beef patty with fresh greens.' },
@@ -30,7 +39,7 @@ const RESTAURANT_INFO: RestaurantData = {
 };
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'tables' | 'menu' | 'kitchen' | 'revenue' | 'expenses'>('tables');
+  const [view, setView] = useState<'tables' | 'menu' | 'kitchen' | 'revenue' | 'expenses' | 'history'>('tables');
   const [tables, setTables] = useState<Table[]>(INITIAL_TABLES);
   const [menu, setMenu] = useState<MenuItem[]>(INITIAL_MENU);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -40,9 +49,14 @@ const App: React.FC = () => {
 
   const activeTable = tables.find(t => t.id === selectedTableId);
 
-  const updateTableStatus = (tableId: number, status: Table['status'], order?: OrderItem[]) => {
+  const updateTableStatus = (tableId: number, status: Table['status'], order?: OrderItem[], orderStartTime?: Date) => {
     setTables(prev => prev.map(t => 
-      t.id === tableId ? { ...t, status, currentOrder: order || t.currentOrder } : t
+      t.id === tableId ? { 
+        ...t, 
+        status, 
+        currentOrder: order || t.currentOrder,
+        orderStartTime: orderStartTime !== undefined ? orderStartTime : t.orderStartTime 
+      } : t
     ));
   };
 
@@ -59,7 +73,9 @@ const App: React.FC = () => {
   };
 
   const handlePlaceOrder = (tableId: number, order: OrderItem[]) => {
-    updateTableStatus(tableId, 'Occupied', order);
+    const table = tables.find(t => t.id === tableId);
+    const startTime = table?.orderStartTime || new Date();
+    updateTableStatus(tableId, 'Occupied', order, startTime);
     setSelectedTableId(null);
   };
 
@@ -83,9 +99,12 @@ const App: React.FC = () => {
         total: subtotal,
         timestamp: new Date()
       };
-      setTransactions(prev => [...prev, newTransaction]);
+      setTransactions(prev => [newTransaction, ...prev]);
     }
-    updateTableStatus(tableId, 'Available', []);
+    // Explicitly reset the table status and clear order data including startTime
+    setTables(prev => prev.map(t => 
+      t.id === tableId ? { ...t, status: 'Available', currentOrder: [], orderStartTime: undefined } : t
+    ));
     setReceiptTable(null);
   };
 
@@ -99,13 +118,15 @@ const App: React.FC = () => {
             {view === 'tables' ? 'Floor Plan' : 
              view === 'menu' ? 'Menu Management' : 
              view === 'kitchen' ? 'Kitchen Dashboard' : 
-             view === 'revenue' ? 'Revenue Report' : 'Expense Management'}
+             view === 'revenue' ? 'Revenue Report' : 
+             view === 'history' ? 'Order History' : 'Expense Management'}
           </h1>
           <p className="text-slate-500">
             {view === 'tables' ? 'Manage table occupancy and active orders.' : 
              view === 'menu' ? 'Add or modify items in your digital menu.' :
              view === 'kitchen' ? 'Live order tracking for preparation and service.' : 
              view === 'revenue' ? 'Track your sales performance and monthly earnings.' :
+             view === 'history' ? 'Review all past orders and table activities.' :
              'Track operational costs and calculate net income.'}
           </p>
         </header>
@@ -133,6 +154,10 @@ const App: React.FC = () => {
 
         {view === 'revenue' && (
           <RevenueView transactions={transactions} />
+        )}
+
+        {view === 'history' && (
+          <OrderHistoryView transactions={transactions} />
         )}
 
         {view === 'expenses' && (

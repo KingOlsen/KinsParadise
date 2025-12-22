@@ -25,6 +25,14 @@
     .print-only {
       display: none;
     }
+
+    @keyframes blink-alert {
+      0%, 100% { background-color: #fee2e2; border-color: #ef4444; }
+      50% { background-color: #f87171; border-color: #b91c1c; color: white; }
+    }
+    .animate-blink-alert {
+      animation: blink-alert 1s infinite;
+    }
   </style>
 <script type="importmap">
 {

@@ -2,12 +2,12 @@
 import React from 'react';
 
 interface SidebarProps {
-  currentView: 'tables' | 'menu' | 'kitchen' | 'revenue' | 'expenses';
-  setView: (view: 'tables' | 'menu' | 'kitchen' | 'revenue' | 'expenses') => void;
+  currentView: 'tables' | 'menu' | 'kitchen' | 'revenue' | 'expenses' | 'history';
+  setView: (view: 'tables' | 'menu' | 'kitchen' | 'revenue' | 'expenses' | 'history') => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
-  const NavItem = ({ id, label, icon }: { id: 'tables' | 'menu' | 'kitchen' | 'revenue' | 'expenses', label: string, icon: string }) => (
+  const NavItem = ({ id, label, icon }: { id: SidebarProps['currentView'], label: string, icon: string }) => (
     <button
       onClick={() => setView(id)}
       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
@@ -32,6 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
         <NavItem id="tables" label="Tables" icon="🪑" />
         <NavItem id="kitchen" label="Kitchen" icon="👨‍🍳" />
         <NavItem id="menu" label="Menu" icon="📖" />
+        <NavItem id="history" label="Order History" icon="📜" />
         <NavItem id="revenue" label="Revenue" icon="📊" />
         <NavItem id="expenses" label="Expenses" icon="💸" />
       </nav>

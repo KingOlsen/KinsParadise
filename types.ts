@@ -23,6 +23,7 @@ export interface Table {
   number: string;
   status: TableStatus;
   currentOrder?: OrderItem[];
+  orderStartTime?: Date;
 }
 
 export interface RestaurantData {

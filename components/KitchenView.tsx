@@ -20,7 +20,19 @@ const KitchenView: React.FC<KitchenViewProps> = ({ tables, onUpdateItemStatus })
 
   const tablesWithOrders = tables.filter(t => t.currentOrder && t.currentOrder.length > 0);
 
-  if (tablesWithOrders.length === 0) {
+  // Sort tables by orderStartTime ascending (Oldest orders appear first)
+  const sortedTables = [...tablesWithOrders].sort((a, b) => {
+    const timeA = a.orderStartTime ? new Date(a.orderStartTime).getTime() : Infinity;
+    const timeB = b.orderStartTime ? new Date(b.orderStartTime).getTime() : Infinity;
+    
+    if (timeA === timeB) {
+      // Secondary sort by table number if times are identical
+      return a.number.localeCompare(b.number, undefined, { numeric: true });
+    }
+    return timeA - timeB;
+  });
+
+  if (sortedTables.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-400">
         <div className="text-6xl mb-4">💤</div>
@@ -32,7 +44,7 @@ const KitchenView: React.FC<KitchenViewProps> = ({ tables, onUpdateItemStatus })
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {tablesWithOrders.map(table => (
+      {sortedTables.map(table => (
         <div key={table.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col animate-in fade-in slide-in-from-bottom-2">
           <header className="bg-slate-800 text-white p-4 flex justify-between items-center">
             <div>

@@ -76,11 +76,6 @@ const KitchenView: React.FC<KitchenViewProps> = ({ tables, onUpdateItemStatus })
                       }`}>
                         {item.name}
                       </span>
-                      {isOverdue && (
-                        <span className="bg-white text-red-600 text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm animate-pulse shrink-0">
-                          ⚠️ LATE
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center space-x-2 mt-0.5">
                       <span className={`text-[10px] uppercase font-bold ${isOverdue ? 'text-red-100' : 'text-slate-400'}`}>

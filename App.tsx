@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { Table, MenuItem, OrderItem, RestaurantData, OrderItemStatus } from './types';
+import { Table, MenuItem, OrderItem, RestaurantData, OrderItemStatus, Transaction, Expense } from './types';
 import TableGrid from './components/TableGrid';
 import MenuManager from './components/MenuManager';
 import OrderInterface from './components/OrderInterface';
 import ReceiptModal from './components/ReceiptModal';
 import Sidebar from './components/Sidebar';
 import KitchenView from './components/KitchenView';
+import RevenueView from './components/RevenueView';
+import ExpensesView from './components/ExpensesView';
 
 const INITIAL_TABLES: Table[] = Array.from({ length: 12 }, (_, i) => ({
   id: i + 1,
@@ -22,15 +24,17 @@ const INITIAL_MENU: MenuItem[] = [
 ];
 
 const RESTAURANT_INFO: RestaurantData = {
-  name: "GastroFlow Bistro",
+  name: "DaporKu Bistro",
   address: "123 Culinary Ave, Foodie City",
   phone: "(555) 012-3456"
 };
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'tables' | 'menu' | 'kitchen'>('tables');
+  const [view, setView] = useState<'tables' | 'menu' | 'kitchen' | 'revenue' | 'expenses'>('tables');
   const [tables, setTables] = useState<Table[]>(INITIAL_TABLES);
   const [menu, setMenu] = useState<MenuItem[]>(INITIAL_MENU);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [receiptTable, setReceiptTable] = useState<Table | null>(null);
 
@@ -67,6 +71,20 @@ const App: React.FC = () => {
   };
 
   const finalizePayment = (tableId: number) => {
+    const table = tables.find(t => t.id === tableId);
+    if (table && table.currentOrder) {
+      const subtotal = table.currentOrder.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+      const newTransaction: Transaction = {
+        id: Date.now().toString(),
+        tableNumber: table.number,
+        items: [...table.currentOrder],
+        subtotal: subtotal,
+        tax: 0,
+        total: subtotal,
+        timestamp: new Date()
+      };
+      setTransactions(prev => [...prev, newTransaction]);
+    }
     updateTableStatus(tableId, 'Available', []);
     setReceiptTable(null);
   };
@@ -78,14 +96,17 @@ const App: React.FC = () => {
       <main className="flex-1 p-4 md:p-8 overflow-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800 font-serif">
-            {view === 'tables' ? 'Floor Plan' : view === 'menu' ? 'Menu Management' : 'Kitchen Dashboard'}
+            {view === 'tables' ? 'Floor Plan' : 
+             view === 'menu' ? 'Menu Management' : 
+             view === 'kitchen' ? 'Kitchen Dashboard' : 
+             view === 'revenue' ? 'Revenue Report' : 'Expense Management'}
           </h1>
           <p className="text-slate-500">
-            {view === 'tables' 
-              ? 'Manage table occupancy and active orders.' 
-              : view === 'menu'
-              ? 'Add or modify items in your digital menu.'
-              : 'Live order tracking for preparation and service.'}
+            {view === 'tables' ? 'Manage table occupancy and active orders.' : 
+             view === 'menu' ? 'Add or modify items in your digital menu.' :
+             view === 'kitchen' ? 'Live order tracking for preparation and service.' : 
+             view === 'revenue' ? 'Track your sales performance and monthly earnings.' :
+             'Track operational costs and calculate net income.'}
           </p>
         </header>
 
@@ -107,6 +128,18 @@ const App: React.FC = () => {
           <KitchenView 
             tables={tables}
             onUpdateItemStatus={updateOrderItemStatus}
+          />
+        )}
+
+        {view === 'revenue' && (
+          <RevenueView transactions={transactions} />
+        )}
+
+        {view === 'expenses' && (
+          <ExpensesView 
+            expenses={expenses} 
+            setExpenses={setExpenses} 
+            transactions={transactions}
           />
         )}
       </main>

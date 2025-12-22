@@ -10,6 +10,7 @@ interface MenuManagerProps {
 
 const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [newItem, setNewItem] = useState<Partial<MenuItem>>({
     name: '',
@@ -18,19 +19,45 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
     description: ''
   });
 
-  const handleAddItem = () => {
-    if (newItem.name && newItem.price) {
-      const item: MenuItem = {
-        id: Date.now().toString(),
-        name: newItem.name,
-        price: Number(newItem.price),
-        category: newItem.category as Category,
-        description: newItem.description
-      };
-      setMenu(prev => [...prev, item]);
-      setNewItem({ name: '', price: 0, category: 'Food', description: '' });
-      setIsAdding(false);
+  const handleSaveItem = () => {
+    if (newItem.name && newItem.price !== undefined) {
+      if (editingItem) {
+        // Update existing item
+        setMenu(prev => prev.map(item => 
+          item.id === editingItem.id 
+            ? { ...item, ...newItem, price: Number(newItem.price) } as MenuItem 
+            : item
+        ));
+      } else {
+        // Add new item
+        const item: MenuItem = {
+          id: Date.now().toString(),
+          name: newItem.name,
+          price: Number(newItem.price),
+          category: newItem.category as Category,
+          description: newItem.description
+        };
+        setMenu(prev => [...prev, item]);
+      }
+      resetForm();
     }
+  };
+
+  const resetForm = () => {
+    setNewItem({ name: '', price: 0, category: 'Food', description: '' });
+    setIsAdding(false);
+    setEditingItem(null);
+  };
+
+  const handleEditClick = (item: MenuItem) => {
+    setEditingItem(item);
+    setNewItem({
+      name: item.name,
+      price: item.price,
+      category: item.category,
+      description: item.description
+    });
+    setIsAdding(true);
   };
 
   const handleGenerateDescription = async () => {
@@ -42,42 +69,48 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
   };
 
   const removeItem = (id: string) => {
-    setMenu(prev => prev.filter(item => item.id !== id));
+    if (confirm('Are you sure you want to delete this item?')) {
+      setMenu(prev => prev.filter(item => item.id !== id));
+    }
   };
 
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-slate-700">Current Menu</h2>
-        <button 
-          onClick={() => setIsAdding(true)}
-          className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition shadow-sm flex items-center space-x-2"
-        >
-          <span>+</span>
-          <span>Add New Item</span>
-        </button>
+        {!isAdding && (
+          <button 
+            onClick={() => setIsAdding(true)}
+            className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition shadow-sm flex items-center space-x-2"
+          >
+            <span>+</span>
+            <span>Add New Item</span>
+          </button>
+        )}
       </div>
 
       {isAdding && (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-md space-y-4">
-          <h3 className="font-bold text-slate-800">Add New Dish or Drink</h3>
+        <div className="bg-sky-50 p-6 rounded-xl border border-sky-200 shadow-md space-y-4 transition-all duration-300 ease-in-out">
+          <h3 className="font-bold text-sky-900">
+            {editingItem ? `Update ${editingItem.name}` : 'Add New Dish or Drink'}
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input 
               type="text" 
               placeholder="Item Name" 
-              className="border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-orange-200 outline-none"
+              className="border border-sky-200 rounded-lg p-2 focus:ring-2 focus:ring-sky-400 outline-none bg-white"
               value={newItem.name}
               onChange={(e) => setNewItem({...newItem, name: e.target.value})}
             />
             <input 
               type="number" 
               placeholder="Price ($)" 
-              className="border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-orange-200 outline-none"
+              className="border border-sky-200 rounded-lg p-2 focus:ring-2 focus:ring-sky-400 outline-none bg-white"
               value={newItem.price || ''}
               onChange={(e) => setNewItem({...newItem, price: Number(e.target.value)})}
             />
             <select 
-              className="border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-orange-200 outline-none"
+              className="border border-sky-200 rounded-lg p-2 focus:ring-2 focus:ring-sky-400 outline-none bg-white"
               value={newItem.category}
               onChange={(e) => setNewItem({...newItem, category: e.target.value as Category})}
             >
@@ -89,21 +122,26 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
           <div className="relative">
             <textarea 
               placeholder="Description (optional)" 
-              className="w-full border border-slate-200 rounded-lg p-2 h-20 focus:ring-2 focus:ring-orange-200 outline-none pr-32"
+              className="w-full border border-sky-200 rounded-lg p-2 h-20 focus:ring-2 focus:ring-sky-400 outline-none pr-32 bg-white"
               value={newItem.description}
               onChange={(e) => setNewItem({...newItem, description: e.target.value})}
             />
             <button 
               onClick={handleGenerateDescription}
               disabled={loadingAI || !newItem.name}
-              className="absolute right-2 bottom-2 text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-md border border-indigo-100 hover:bg-indigo-100 disabled:opacity-50"
+              className="absolute right-2 bottom-2 text-xs bg-sky-100 text-sky-700 px-3 py-1 rounded-md border border-sky-200 hover:bg-sky-200 disabled:opacity-50"
             >
               {loadingAI ? 'Generating...' : '✨ AI Description'}
             </button>
           </div>
           <div className="flex justify-end space-x-3">
-            <button onClick={() => setIsAdding(false)} className="text-slate-500 px-4 py-2">Cancel</button>
-            <button onClick={handleAddItem} className="bg-slate-800 text-white px-6 py-2 rounded-lg">Save Item</button>
+            <button onClick={resetForm} className="text-sky-600 hover:text-sky-800 px-4 py-2 font-medium">Cancel</button>
+            <button 
+              onClick={handleSaveItem} 
+              className="bg-sky-600 text-white px-6 py-2 rounded-lg hover:bg-sky-700 transition-colors shadow-sm font-semibold"
+            >
+              {editingItem ? 'Update Item' : 'Save Item'}
+            </button>
           </div>
         </div>
       )}
@@ -135,15 +173,32 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
                 </td>
                 <td className="px-6 py-4 font-medium">${item.price.toFixed(2)}</td>
                 <td className="px-6 py-4 text-right">
-                  <button 
-                    onClick={() => removeItem(item.id)}
-                    className="text-red-400 hover:text-red-600 p-1"
-                  >
-                    🗑️
-                  </button>
+                  <div className="flex justify-end space-x-3">
+                    <button 
+                      onClick={() => handleEditClick(item)}
+                      className="text-blue-400 hover:text-blue-600 p-1"
+                      title="Edit"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      onClick={() => removeItem(item.id)}
+                      className="text-red-400 hover:text-red-600 p-1"
+                      title="Delete"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
+            {menu.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-6 py-10 text-center text-slate-400 italic">
+                  No items in the menu. Click "Add New Item" to start.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

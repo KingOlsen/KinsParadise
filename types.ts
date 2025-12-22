@@ -30,3 +30,21 @@ export interface RestaurantData {
   address: string;
   phone: string;
 }
+
+export interface Transaction {
+  id: string;
+  tableNumber: string;
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  timestamp: Date;
+}
+
+export interface Expense {
+  id: string;
+  description: string;
+  amount: number;
+  category: string;
+  timestamp: Date;
+}

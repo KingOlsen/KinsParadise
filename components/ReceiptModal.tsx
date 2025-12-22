@@ -13,8 +13,9 @@ interface ReceiptModalProps {
 const ReceiptModal: React.FC<ReceiptModalProps> = ({ table, restaurantInfo, onClose, onPaid }) => {
   const [wittyNote, setWittyNote] = useState('Thank you for dining with us!');
   const subtotal = table.currentOrder?.reduce((sum, i) => sum + (i.price * i.quantity), 0) || 0;
-  const tax = subtotal * 0.1;
-  const total = subtotal + tax;
+  // Tax set to $0.00 as requested
+  const tax = 0;
+  const total = subtotal;
 
   useEffect(() => {
     generateWittyGreeting(restaurantInfo.name).then(setWittyNote);
@@ -65,8 +66,8 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ table, restaurantInfo, onCl
                 <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Tax (10%)</span>
-                <span>${tax.toFixed(2)}</span>
+                <span>Tax</span>
+                <span>$0.00</span>
               </div>
               <div className="flex justify-between text-lg font-bold border-t border-slate-300 pt-2 mt-2">
                 <span>TOTAL</span>
@@ -124,8 +125,8 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ table, restaurantInfo, onCl
             <span>${subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span>Tax (10%)</span>
-            <span>${tax.toFixed(2)}</span>
+            <span>Tax</span>
+            <span>$0.00</span>
           </div>
           <div className="flex justify-between text-xl font-bold">
             <span>TOTAL</span>

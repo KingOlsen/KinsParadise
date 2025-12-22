@@ -74,6 +74,13 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
     }
   };
 
+  // Sort menu by Category asc, then Name asc
+  const sortedMenu = [...menu].sort((a, b) => {
+    const catCompare = a.category.localeCompare(b.category);
+    if (catCompare !== 0) return catCompare;
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex justify-between items-center">
@@ -157,7 +164,7 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {menu.map((item) => (
+            {sortedMenu.map((item) => (
               <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="font-medium text-slate-800">{item.name}</div>
@@ -192,7 +199,7 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
                 </td>
               </tr>
             ))}
-            {menu.length === 0 && (
+            {sortedMenu.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-6 py-10 text-center text-slate-400 italic">
                   No items in the menu. Click "Add New Item" to start.

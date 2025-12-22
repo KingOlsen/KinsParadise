@@ -20,7 +20,7 @@ const OrderInterface: React.FC<OrderInterfaceProps> = ({ table, menu, onClose, o
       if (existing) {
         return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      return [...prev, { ...item, quantity: 1, status: 'Pending' }];
+      return [...prev, { ...item, quantity: 1, status: 'Pending', remark: '' }];
     });
   };
 
@@ -34,11 +34,15 @@ const OrderInterface: React.FC<OrderInterfaceProps> = ({ table, menu, onClose, o
     });
   };
 
+  const updateRemark = (id: string, remark: string) => {
+    setCurrentOrder(prev => prev.map(i => i.id === id ? { ...i, remark } : i));
+  };
+
   const total = currentOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-end">
-      <div className="w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col">
+      <div className="w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         <header className="p-6 border-b border-slate-100 flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Table {table.number}</h2>
@@ -80,24 +84,39 @@ const OrderInterface: React.FC<OrderInterfaceProps> = ({ table, menu, onClose, o
 
           {/* Current Basket */}
           <div className="w-80 flex flex-col bg-slate-50">
-            <div className="p-4 bg-slate-800 text-white font-semibold">Order Summary</div>
+            <div className="p-4 bg-slate-800 text-white font-semibold flex items-center justify-between">
+              <span>Order Summary</span>
+              <span className="text-xs bg-orange-500 px-2 py-0.5 rounded-full">{currentOrder.length}</span>
+            </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {currentOrder.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-2 opacity-60">
                   <span className="text-4xl">🍽️</span>
-                  <p className="text-sm">No items selected</p>
+                  <p className="text-sm font-medium">No items selected</p>
                 </div>
               ) : (
                 currentOrder.map(item => (
-                  <div key={item.id} className="flex justify-between items-center bg-white p-2 rounded-lg shadow-sm border border-slate-200">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-slate-800 truncate">{item.name}</div>
-                      <div className="text-xs text-slate-500">${(item.price * item.quantity).toFixed(2)}</div>
+                  <div key={item.id} className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold text-slate-800 truncate">{item.name}</div>
+                        <div className="text-xs text-slate-500">${(item.price * item.quantity).toFixed(2)}</div>
+                      </div>
+                      <div className="flex items-center space-x-2 ml-2">
+                        <button onClick={() => removeFromOrder(item.id)} className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 hover:bg-red-100 hover:text-red-600 flex items-center justify-center">-</button>
+                        <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+                        <button onClick={() => addToOrder(item)} className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 hover:bg-green-100 hover:text-green-600 flex items-center justify-center">+</button>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2 ml-2">
-                      <button onClick={() => removeFromOrder(item.id)} className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 hover:bg-red-100 hover:text-red-600 flex items-center justify-center">-</button>
-                      <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
-                      <button onClick={() => addToOrder(item)} className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 hover:bg-green-100 hover:text-green-600 flex items-center justify-center">+</button>
+                    {/* Remark Input Field */}
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        placeholder="Add remark (e.g. No onions)"
+                        className="w-full text-[11px] bg-slate-50 border border-slate-100 rounded-md px-2 py-1 focus:outline-none focus:border-orange-200 focus:ring-1 focus:ring-orange-100 text-slate-600 italic"
+                        value={item.remark || ''}
+                        onChange={(e) => updateRemark(item.id, e.target.value)}
+                      />
                     </div>
                   </div>
                 ))
@@ -113,14 +132,14 @@ const OrderInterface: React.FC<OrderInterfaceProps> = ({ table, menu, onClose, o
                 <button 
                   onClick={() => onPlaceOrder(currentOrder)}
                   disabled={currentOrder.length === 0}
-                  className="bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-slate-700 disabled:opacity-50"
+                  className="bg-slate-800 text-white py-3 rounded-xl font-bold hover:bg-slate-700 disabled:opacity-50 transition-all active:scale-95"
                 >
                   Send to Kitchen
                 </button>
                 <button 
                   onClick={onCheckout}
                   disabled={currentOrder.length === 0}
-                  className="bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 disabled:opacity-50"
+                  className="bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 disabled:opacity-50 transition-all active:scale-95"
                 >
                   Checkout
                 </button>

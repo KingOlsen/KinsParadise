@@ -119,12 +119,19 @@ const OrderHistoryView: React.FC<OrderHistoryViewProps> = ({ transactions }) => 
               <div className="space-y-3 mb-8">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Order Items</p>
                 {selectedTx.items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center py-1">
-                    <div className="flex-1">
-                      <span className="font-bold text-slate-800">{item.quantity}x</span>
-                      <span className="ml-2 text-slate-600">{item.name}</span>
+                  <div key={idx} className="py-2 border-b border-slate-50 last:border-0">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <span className="font-bold text-slate-800">{item.quantity}x</span>
+                        <span className="ml-2 text-slate-600">{item.name}</span>
+                      </div>
+                      <span className="text-slate-800 font-medium">${(item.price * item.quantity).toFixed(2)}</span>
                     </div>
-                    <span className="text-slate-800 font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                    {item.remark && (
+                      <p className="text-xs text-orange-600 italic mt-1 ml-6">
+                        Remark: {item.remark}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

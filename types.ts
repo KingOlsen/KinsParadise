@@ -14,6 +14,7 @@ export interface MenuItem {
 export interface OrderItem extends MenuItem {
   quantity: number;
   status: OrderItemStatus;
+  remark?: string;
 }
 
 export type TableStatus = 'Available' | 'Occupied' | 'Billed';

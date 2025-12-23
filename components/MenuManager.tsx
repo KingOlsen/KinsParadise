@@ -23,14 +23,12 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
   const handleSaveItem = () => {
     if (newItem.name && newItem.price !== undefined) {
       if (editingItem) {
-        // Update existing item
         setMenu(prev => prev.map(item => 
           item.id === editingItem.id 
             ? { ...item, ...newItem, price: Number(newItem.price) } as MenuItem 
             : item
         ));
       } else {
-        // Add new item
         const item: MenuItem = {
           id: Date.now().toString(),
           name: newItem.name,
@@ -79,7 +77,6 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
     }
   };
 
-  // Sort menu by Category asc, then Name asc
   const sortedMenu = [...menu].sort((a, b) => {
     const catCompare = a.category.localeCompare(b.category);
     if (catCompare !== 0) return catCompare;
@@ -113,19 +110,19 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
             <input 
               type="text" 
               placeholder="Item Name" 
-              className="border border-sky-200 rounded-lg p-2 focus:ring-2 focus:ring-sky-400 outline-none bg-white"
+              className="border border-sky-200 rounded-lg p-2 focus:ring-2 focus:ring-sky-400 outline-none bg-white text-slate-800"
               value={newItem.name}
               onChange={(e) => setNewItem({...newItem, name: e.target.value})}
             />
             <input 
               type="number" 
               placeholder="Price ($)" 
-              className="border border-sky-200 rounded-lg p-2 focus:ring-2 focus:ring-sky-400 outline-none bg-white"
+              className="border border-sky-200 rounded-lg p-2 focus:ring-2 focus:ring-sky-400 outline-none bg-white text-slate-800"
               value={newItem.price || ''}
               onChange={(e) => setNewItem({...newItem, price: Number(e.target.value)})}
             />
             <select 
-              className="border border-sky-200 rounded-lg p-2 focus:ring-2 focus:ring-sky-400 outline-none bg-white"
+              className="border border-sky-200 rounded-lg p-2 focus:ring-2 focus:ring-sky-400 outline-none bg-white text-slate-800"
               value={newItem.category}
               onChange={(e) => setNewItem({...newItem, category: e.target.value as Category})}
             >
@@ -137,7 +134,7 @@ const MenuManager: React.FC<MenuManagerProps> = ({ menu, setMenu }) => {
           <div className="relative">
             <textarea 
               placeholder="Description (optional)" 
-              className="w-full border border-sky-200 rounded-lg p-2 h-20 focus:ring-2 focus:ring-sky-400 outline-none pr-32 bg-white"
+              className="w-full border border-sky-200 rounded-lg p-2 h-20 focus:ring-2 focus:ring-sky-400 outline-none pr-32 bg-white text-slate-800"
               value={newItem.description}
               onChange={(e) => setNewItem({...newItem, description: e.target.value})}
             />

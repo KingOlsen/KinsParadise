@@ -1,15 +1,16 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-
+// Fix: Updated generateMenuDescription to follow the "create instance right before call" and "direct process.env.API_KEY usage" guidelines
 export const generateMenuDescription = async (itemName: string, category: string): Promise<string> => {
-  const ai = getAI();
+  // Always use the required initialization format and create instance locally
+  const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Generate a short, appetizing, one-sentence culinary description for a restaurant menu item named "${itemName}" which is in the "${category}" category. Keep it elegant and professional.`,
     });
+    // Property access .text used correctly for the extracted output
     return response.text?.trim() || "A delicious addition to our menu.";
   } catch (error) {
     console.error("Gemini Error:", error);
@@ -17,8 +18,9 @@ export const generateMenuDescription = async (itemName: string, category: string
   }
 };
 
+// Fix: Refactored generateWittyGreeting to ensure the most up-to-date API key is used by initializing inside the function
 export const generateWittyGreeting = async (restaurantName: string): Promise<string> => {
-  const ai = getAI();
+  const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
